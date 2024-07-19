@@ -1,3 +1,5 @@
 theme: minima
+minima:
+skin: dark
 title: Pari's homepage
 description: Bookmark this to keep an eye on my project updates!
