@@ -28,7 +28,7 @@ description: >- # this means to ignore newlines until "baseurl:"
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
-github_username:  pari-thimaalk
+# github_username: pari-thimaalk
 
 
 # Build settings
@@ -39,7 +39,10 @@ plugins:
 
 remote_theme: jekyll/minima
 minima:
-  skin: solarized-dark
+  skin: dark
+  social_links:
+    - { platform: github,  user_url: "https://github.com/pari-thimaalk" }
+    - { platform: linkedin, user_url: "https://linkedin.com/in/pari-thimaalk/" }
 
 # Exclude from processing.
 # The following items will not be processed, by default.
