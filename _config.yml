@@ -29,7 +29,7 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
 github_username: pari-thimaalk
-linkedin_username: pari-thimaalk
+# linkedin_username: pari-thimaalk
 
 
 # Build settings
@@ -41,7 +41,7 @@ plugins:
 remote_theme: jekyll/minima
 minima:
   skin: dark
-  
+
   # social_links:
   #   - { platform: github,  user_url: "https://github.com/pari-thimaalk" }
   #   - { platform: linkedin, user_url: "https://linkedin.com/in/pari-thimaalk/" }
