@@ -27,7 +27,7 @@ title: Pari's digital footprint
 email: pk38@illinois.edu
 
 description: >- # this means to ignore newlines until "baseurl:"
-  A tech junkie's attempt at chronicling his triumphs and errors.  
+  One man's quest to become a better engineer and a wiser person.
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
