@@ -1,9 +1,10 @@
 ---
 # Feel free to add content and custom Front Matter to this file.
 # To modify the layout, see https://jekyllrb.com/docs/themes/#overriding-theme-defaults
-title: papers
+title: reading list
 layout: page
 ---
+### papers
 Largely thanks to Professor Vasisht, I had the opportunity to get started on reading and understanding several well written academic papers. I intend to grow this list as time goes on.
 
 **Distributed Systems**
