@@ -1,9 +1,19 @@
 .social-media-list li a{
     display: flex;
+    border: none;
+    padding: 0px;
 }
 
 .social-media-list li a span{
-    font-size: smaller;
+    font-size: small;
     margin: 2px;
-   vertical-align: middle;
+    vertical-align: middle;
+}
+
+.socials{
+    display: block;
+}
+
+.try{
+    width: 50px;
 }

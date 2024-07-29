@@ -44,7 +44,7 @@ remote_theme: jekyll/minima
 minima:
   skin: dark
   social_links:
-    - { platform: github,  user_url: "https://github.com/jekyll/jekyll" }
+    - { platform: github,  user_url: "https://github.com/pari-thimaalk" }
     - { platform: linkedin, user_url: "https://linkedin.com/in/pari-thimaalk/" }
 
 # Exclude from processing.
