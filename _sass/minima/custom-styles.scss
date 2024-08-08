@@ -1,19 +1,25 @@
 .social-media-list li a{
-    display: flex;
+    display: block;
     border: none;
     padding: 0px;
+    // width: 200px;
 }
 
 .social-media-list li a span{
-    font-size: small;
+    font-size: 14px;
     margin: 2px;
     vertical-align: middle;
 }
 
-.socials{
-    display: block;
+.footer-col:nth-child(1){
+    padding-top: 5px;
+    width:40%
+}
+.footer-col:nth-child(2){
+    padding-top: 0px;
+    width:35%
+}
+.footer-col:nth-child(3){
+    padding-top: 5px;
 }
 
-.try{
-    width: 50px;
-}
