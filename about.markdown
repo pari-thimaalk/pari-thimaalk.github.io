@@ -15,7 +15,8 @@ Ones where I learned a lot.
 Built an operating system from scratch, that runs on a single core processor. Implemented paging, system calls, device drivers and scheduling, using various data structures. Mostly in C, a sprinkle of x86 for culture. Built and tested using a version of Qemu that was before terminal scrollbacks were a thing.
 
 [**FPGA Network Stack**](https://github.com/pari-thimaalk/HTTP_lwip_FPGA)\
-Developed a HTTP client to interface with the Urbana FPGA Board. Fixed a number of bugs in AMD Xilinx's implementation of lightweight-IP (lwIP), to get TCP/IP working. Made a hardware block design that interfaces with an external PHY, as the Urbana Board does not come with one. My group was the first to ever connect this FPGA board to the Internet, not to brag.
+Developed a HTTP client to interface with the Urbana FPGA Board. Fixed a number of bugs in AMD Xilinx's implementation of lightweight-IP (lwIP), to get TCP/IP working. Made a hardware block design that interfaces with an external PHY, as the Urbana Board does not come with one. My group was the first to ever connect this FPGA board to the Internet.
+[Report](/files/Networking_FPGA_Final_Report.pdf)
 
 [**Fair Division Algorithms**](https://github.com/pari-thimaalk/Fair_Division)\
 Implemented some [fair division](https://en.wikipedia.org/wiki/Fair_division) algorithms in an android app, as part of research under PHD student Aniket Murhekar.
