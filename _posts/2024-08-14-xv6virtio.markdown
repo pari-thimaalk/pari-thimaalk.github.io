@@ -1,0 +1,60 @@
+---
+layout: post
+title:  "Adding Display to xv6, Part 1"
+date:   2024-08-14 20:39:36 -0500
+categories: riscv virtio xv6
+---
+xv6 is a RISCV kernel developed by MIT for their Operating System Engineering class. Unlike ECE391 at UIUC, where the focus is to build a x86 Kernel from scratch by implementing features like device drivers and scheduling, xv6 already comes with those features and the focus of their class is to expand on the capabilities of the Kernel, introducing features such as symbolic linking. The ECE391 Kernel uses VGA display and keyboard for communication, whereas xv6 interaction is performed via UART and the command line. This post covers my efforts at getting a display device to interface with xv6.
+
+### A device is just what I need
+
+The first course of action was finding what device to emulate. Virtio is the standard used by QEMU when it comes to emulating devices, and devices are classified based on function, such as virtio-input, virtio-block-device, and virtio-gpu. Clearly we need a virtio-gpu device, and by typing `info qdm` into the QEMU monitor, I was able to get a list of available devices that could be emulated.
+
+{:refdef: style="text-align: center;"}
+![](/img/2024_0814/displaydevices.png)
+{: refdef}
+
+We can see a trend where there are two classes of devices, namely virtio-*-device and virtio-*-pci. This is not unique to virtio-gpu devices, and is also reflected in virtio-input and other device classes. There is not much documentation detailing the differences, and I could only find this [reddit post](https://www.reddit.com/r/qemu_kvm/comments/4oj328/difference_between_virtiodevice_and_virtiopci/) to understand the classification. It seems that while both correspond to virtio devices, -pci mandates the device to be addressed and discovered through the PCI protocol, and uses the PCI bus, whereas -device allows the device to be discovered through the underlying system mechanism, similar to a platform device. I then looked up what [a platform device even means](https://stackoverflow.com/questions/15610570/what-is-the-difference-between-a-linux-platform-driver-and-normal-device-driver), and it seems that a platform device is more akin to 
+
+I was hoping to use VGA graphics, but [the virtio-gpu docs](https://www.qemu.org/docs/master/system/devices/virtio-gpu.html) says declaratively that all the VGA display devices would have to be added through PCI, and not as a plain virtio device. As PCI was originally developed by Intel and consequently is more suited for x86 based systems, my Professor recommended I avoid using it with RISCV systems. For example, PCI has features for port space, address space, config space and message space, which exist in x86 [but are all reduced to address space in RISC(-V) systems](https://electronics.stackexchange.com/questions/661331/is-pcie-io-address-space-meaningless-for-arm-based-system).
+
+Having chosen the device of interest, we can add it to the QEMU system emulator. Ordinarily, you would add all your devices as arguments and invoke QEMU via the command line. However, in xv6 there is conveniently a Makefile capturing all the config settings you need. After removing nographics and adding the device, we should be good to go. If done right, this will start up QEMU's graphical frontend once xv6 is invoked.
+
+We can further verify that the device is correctly set up and running by switching over to the QEMU monitor on the GUI, by hitting `ctrl-alt-2`. Using the `info qtree` command, we can see a list of all the currently emulated devices. As we are invoking a plain virtio device, it should be found on the virtio system bus, as we see here.
+
+{:refdef: style="text-align: center;"}
+![](/img/2024_0814/virtio7.png){: width="250" }
+{: refdef}
+
+In this case, QEMU's 64-bit RISCV processor allows for a maximum of 8 virtio devices. We can see that virtio-gpu was added at position 7 (0-indexed). Virtio-disk, which is provided by MIT, is at position 0.
+
+{:refdef: style="text-align: center;"}
+![](/img/2024_0814/virtio0.png){: width="250" }
+{: refdef}
+
+### Communication is key
+
+At this point I spent a good while trying to figure out how to actually discover the device from the CPU and start interacting with it. As we are in RISC-V land and far away from x86, the device space should be somewhere in memory. The xv6 source code assumes that virtio_disk will always be at location 0, and associated variables are prefixed with Virtio0. Virtio0's starting address space, a seemingly magic number, is defined in memlayout.h. The associated offsets (which at least are defined clearly by the Virtio documentation) are used in virtio_disk.c. I googled this magic number and found the memory map for QEMU's RISCV processor inside [qemu/include/hw/riscv/virt.c](https://github.com/qemu/qemu/blob/master/hw/riscv/virt.c), indicating very useful information about where all devices would be accessed in memory.
+
+![](/img/2024_0814/riscvmmio.png)
+
+We can see that Virtio0 starts at 0x10001000, and subsequent devices are located at 0x1000 offsets from each other. Finding the associated IRQ number was a little more tricky, but by tracking a conveniently named variable `VIRTIO_IRQ`, I found that IRQs 1-8 on the PLIC are reserved for Virtio devices. This will come in handy later for receiving information from the device. But for now, we can use 0x10008000 as the starting address of our virtio-gpu's config space in our virtio-gpu driver, and worry about interrupts later.
+
+Now I had to include all this information into a device driver and start writing some actual code. I adapted of the initial steps from virtio_disk.c, as the initial configuration steps are the same across all devices. To summarize the Virtio docs, we have to read from a bunch of addresses corresponding to registers on the device and flip some of their bits, before setting up the device virtqueues, following any device specific configuration steps, before signalling the device as "live". Of these, virtqueues merits further elaboration.
+
+{:refdef: style="text-align: center;"}
+[![](/img/2024_0814/download.jpeg)](https://imgflip.com/tag/device+drivers)
+{: refdef}
+
+### What is a Virtqueue?
+
+Put simply, Virtqueue is the mechanism by which drivers and devices exchange information with one another. There are 3 areas in each Virtqueue, known as the descriptor area, driver area and device area. The descriptor area essentially maintains a list of descriptors, which are pointers to various buffers in use. The driver area maintains a queue of buffers containing commands and data to be sent to the device (available queue), or rather their descriptor numbers, while the device area maintains a similar queue of descriptors that have been acknowledged, or serviced by the device (used queues).
+
+There is a [very good article by Red Hat](https://www.redhat.com/en/blog/virtqueues-and-virtio-ring-how-data-travels) that covers the intricacies of Virtqueues, and coupled with a working implementation of the virtio disk queues, we have most of the knowledge we need to configure controlq and cursorq for the virtio-gpu device.
+
+The one thing I did end up spending quite some time on however, was figuring out how these buffer spaces are allocated. For example, in [section 5.7.6.8 of the Virtio docs](https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html#x1-3280006), we can see that in order to get the default display info, we need to send a request header with type `VIRTIO_GPU_CMD_GET_DISPLAY_INFO` to the device. However, it is unclear how and where the buffer containing the response would be allocated, as the response size is different from the request size. By making some assumptions based on the virtio disk implementation, I found that the response buffer space must be allocated by the driver itself, and sent together with the request header as part of a chain. For why these buffers have to be in a chain instead of part of the same descriptor/buffer,check out [section 2.6](https://docs.oasis-open.org/virtio/virtio/v1.1/csprd01/virtio-v1.1-csprd01.html#x1-240006) of the Virtio docs explaining the inner workings of split virtqueues.
+
+
+### That's it folks
+
+That concludes my progress so far. At this point I am able to configure the device, and send commands to either get or post information to and from the device. The subsequent course of action would be to make a streamlined interrupt handler for all the expected command response types from the device and eventually provide an API interface for the CPU to address individual pixels of the display. Till next time!
