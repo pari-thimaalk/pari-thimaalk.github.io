@@ -27,7 +27,7 @@ title: pari-thimaalk
 email: pk38@illinois.edu
 
 description: >- # this means to ignore newlines until "baseurl:"
-  notes on computer systems and hardware; a computer engineering student trying to get better at his craft
+  notes on computer systems and hardware
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 
